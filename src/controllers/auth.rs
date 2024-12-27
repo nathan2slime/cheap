@@ -1,5 +1,7 @@
 use actix_web::{
-    post, web::{Data, Json}, HttpResponse, Responder
+    post,
+    web::{Data, Json},
+    HttpResponse, Responder,
 };
 use sea_orm::DatabaseConnection;
 
@@ -10,6 +12,7 @@ use crate::{
 
 #[utoipa::path(
     post,
+    tag = "todo",
     path = "/signup",
     request_body = CreateUser,
     responses(

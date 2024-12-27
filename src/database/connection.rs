@@ -1,8 +1,11 @@
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use tracing::{error, info};
 
 pub async fn create(db_url: &str) -> Option<DatabaseConnection> {
-    let connection = Database::connect(db_url).await;
+    let mut opts = ConnectOptions::new(db_url);
+    opts.set_schema_search_path("default");
+
+    let connection = Database::connect(opts).await;
 
     match connection {
         Ok(connection) => {
