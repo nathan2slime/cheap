@@ -6,15 +6,11 @@ pub struct Migration;
 #[async_trait::async_trait]
 impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let _user_ = manager
-            .create_table(
-                Table::create()
+       let _add_password_col = manager
+            .alter_table(
+                Table::alter()
                     .table(Users::Table)
-                    .if_not_exists()
-                    .col(pk_uuid(Users::Id))
-                    .col(string(Users::Username))
-                    .col(string(Users::Password))
-                    .col(ColumnDef::new(Users::Email).string().unique_key())
+                    .add_column(ColumnDef::new(Users::Password).string().not_null())
                     .to_owned(),
             )
             .await;
@@ -33,8 +29,13 @@ impl MigrationTrait for Migration {
     }
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
-        let _user_ = manager
-            .drop_table(Table::drop().table(Users::Table).to_owned())
+       let _drop_password_col =  manager
+            .alter_table(
+                Table::alter()
+                    .table(Users::Table)
+                    .drop_column(Users::Password)
+                    .to_owned(),
+            )
             .await;
 
         manager
@@ -44,18 +45,15 @@ impl MigrationTrait for Migration {
 }
 
 #[derive(DeriveIden)]
-enum Users {
-    Table,
-    Id,
-    Username,
-    Password,
-    Email,
-}
-
-#[derive(DeriveIden)]
 enum Sessions {
     Table,
     Id,
     AuthToken,
     RefreshToken,
+}
+
+#[derive(DeriveIden)]
+enum Users {
+    Table,
+    Password,
 }
