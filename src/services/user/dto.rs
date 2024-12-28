@@ -5,4 +5,5 @@ use utoipa::ToSchema;
 pub struct CreateUser {
     pub email: String,
     pub username: String,
+    pub password: String
 }

@@ -3,6 +3,7 @@ use sea_orm::{ColumnTrait, DbConn, EntityTrait, QueryFilter, Set};
 use super::dto::CreateUser;
 use crate::database::entity::users;
 use crate::types::Error;
+use bcrypt::{hash, DEFAULT_COST};
 use tracing::error;
 
 pub struct Mutation;
@@ -22,10 +23,13 @@ impl Mutation {
                 data: String::from("email already in use"),
             })
         } else {
+            let password = hash(form_data.password.to_owned(), DEFAULT_COST).unwrap();
+
             let data = users::ActiveModel {
                 id: Set(uuid::Uuid::new_v4()),
                 email: Set(form_data.email.to_owned()),
                 username: Set(form_data.username.to_owned()),
+                password: Set(password),
                 ..Default::default()
             };
 
