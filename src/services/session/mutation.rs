@@ -1,6 +1,14 @@
-use chrono::Utc;
-use jsonwebtoken::{encode, EncodingKey, Header};
+use std::str::FromStr;
+
+use sea_orm::{DatabaseConnection, DbErr, EntityTrait, Set};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use crate::{
+    config::AppConfig,
+    database::entity::{sessions, users},
+    services::jwt,
+};
 
 pub struct Mutation;
 
@@ -12,18 +20,32 @@ struct JwtPayload {
 }
 
 impl Mutation {
-    pub async fn create(sub: &str, exp: &i64, session_secret: String) {
-        let clains = JwtPayload {
-            sub: sub.to_owned(),
-            iat: Utc::now().timestamp(),
-            exp: exp.to_owned(),
+    pub async fn create(
+        config: &AppConfig,
+        db: &DatabaseConnection,
+        user: users::Model,
+    ) -> Result<sessions::Model, DbErr> {
+        let session_secret = config.session_secret.to_owned();
+        let user_id = user.id.to_owned().to_string();
+
+        let auth_token =
+            jwt::mutation::Mutation::create(session_secret.clone(), user_id.clone(), 30)
+                .await
+                .unwrap();
+
+        let refresh_token =
+            jwt::mutation::Mutation::create(session_secret.clone(), user_id.clone(), 30)
+                .await
+                .unwrap();
+            
+        let data = sessions::ActiveModel {
+            id: Set(uuid::Uuid::new_v4()),
+            auth_token: Set(auth_token),
+            refresh_token: Set(refresh_token),
+            user_id: Set(Uuid::from_str(&user_id).unwrap()),
+            ..Default::default()
         };
 
-        encode(
-            &Header::default(),
-            &clains,
-            &EncodingKey::from_secret(session_secret.as_ref()),
-        )
-        .unwrap();
+        sessions::Entity::insert(data).exec_with_returning(db).await
     }
 }

@@ -3,7 +3,7 @@ use tracing::{error, info};
 
 pub async fn create(db_url: &str) -> Option<DatabaseConnection> {
     let mut opts = ConnectOptions::new(db_url);
-    opts.set_schema_search_path("default");
+    opts.set_schema_search_path("public");
 
     let connection = Database::connect(opts).await;
 

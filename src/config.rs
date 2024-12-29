@@ -4,7 +4,8 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug, Clone)]
 pub struct AppConfig {
     pub port: u16,
-    pub database_url: String
+    pub database_url: String,
+    pub session_secret: String
 }
 
 pub fn load_config() -> AppConfig {
