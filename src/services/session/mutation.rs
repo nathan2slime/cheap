@@ -29,7 +29,7 @@ impl Mutation {
         let user_id = user.id.to_owned().to_string();
 
         let auth_token =
-            jwt::mutation::Mutation::create(session_secret.clone(), user_id.clone(), 30)
+            jwt::mutation::Mutation::create(session_secret.clone(), user_id.clone(), 7)
                 .await
                 .unwrap();
 

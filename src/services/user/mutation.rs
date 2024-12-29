@@ -1,7 +1,6 @@
 use sea_orm::{ColumnTrait, DbConn, DbErr, EntityTrait, QueryFilter, Set};
 
-use super::dto::CreateUser;
-use crate::database::entity::users;
+use crate::{database::entity::users, services::auth::dto::CreateUser};
 use bcrypt::{hash, DEFAULT_COST};
 use tracing::error;
 
