@@ -5,5 +5,11 @@ use utoipa::ToSchema;
 pub struct CreateUser {
     pub email: String,
     pub username: String,
-    pub password: String
+    pub password: String,
+}
+
+#[derive(Deserialize, ToSchema)]
+pub struct SignIn {
+    pub email: String,
+    pub password: String,
 }

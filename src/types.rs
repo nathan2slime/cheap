@@ -1,4 +1,4 @@
-use sea_orm::{DatabaseConnection, DbErr};
+use sea_orm::DatabaseConnection;
 use serde::Serialize;
 use utoipa::{ToResponse, ToSchema};
 
@@ -13,10 +13,4 @@ pub struct ErrorData {
 pub struct ContextData {
     pub db: DatabaseConnection,
     pub config: AppConfig,
-}
-
-#[derive(Debug)]
-pub enum Error {
-    EmailInUse,
-    Internal(DbErr),
 }

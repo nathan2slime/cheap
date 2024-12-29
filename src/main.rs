@@ -4,6 +4,7 @@ mod database;
 mod routes;
 mod services;
 mod types;
+mod errors;
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};

@@ -1,6 +1,11 @@
 use crate::{
-    services::auth::mutation::Mutation as auth_mutation,
-    types::{ContextData, Error, ErrorData},
+    database::entity::sessions,
+    errors,
+    services::auth::{
+        dto::{CreateUser, SignIn},
+        mutation::Mutation as auth_mutation,
+    },
+    types::{ContextData, ErrorData},
 };
 use actix_web::{
     post,
@@ -8,8 +13,6 @@ use actix_web::{
     HttpResponse, Responder,
 };
 use tracing::error;
-
-use crate::{database::entity::users, services::user::dto::CreateUser};
 
 const TAG: &str = "Auth";
 
@@ -19,7 +22,7 @@ const TAG: &str = "Auth";
     path = "/signup",
     request_body = CreateUser,
     responses(
-        (status = CREATED, description = "Successfully", body = users::Model),
+        (status = CREATED, description = "Successfully", body = sessions::Model),
         (status = BAD_REQUEST, description = "Bad request", body = ErrorData),
         (status = CONFLICT, description = "Email already in use", body = ErrorData)
     )
@@ -28,13 +31,42 @@ const TAG: &str = "Auth";
 pub async fn signup(ctx: Data<ContextData>, body: Json<CreateUser>) -> impl Responder {
     match auth_mutation::signup(&ctx.db, &ctx.config, body.into_inner()).await {
         Ok(session) => HttpResponse::Created().json(session),
-        Err(Error::EmailInUse) => HttpResponse::Conflict().json(ErrorData {
+        Err(errors::SignUp::EmailInUse) => HttpResponse::Conflict().json(ErrorData {
             data: "Email already in use".to_string(),
         }),
-        Err(Error::Internal(e)) => {
+        Err(errors::SignUp::InternalSignUp(e)) => {
             error!("{:?}", e);
+
             HttpResponse::BadRequest().json(ErrorData {
                 data: format!("{:?}", e),
+            })
+        }
+    }
+}
+
+#[utoipa::path(
+    post,
+    tag = TAG,
+    path = "/signin",
+    request_body = SignIn,
+    responses(
+        (status = CREATED, description = "Successfully", body = sessions::Model),
+        (status = BAD_REQUEST, description = "Bad request", body = ErrorData),
+        (status = UNAUTHORIZED, description = "Invalid credentials", body = ErrorData)
+    )
+)]
+#[post("/signin")]
+pub async fn signin(ctx: Data<ContextData>, body: Json<SignIn>) -> impl Responder {
+    match auth_mutation::signin(&ctx.db, &ctx.config, body.into_inner()).await {
+        Ok(session) => HttpResponse::Created().json(session),
+        Err(errors::SignIn::InternalSignIn(e)) => HttpResponse::BadRequest().json(ErrorData {
+            data: format!("{:?}", e),
+        }),
+        Err(e) => {
+            error!("{:?}", e);
+
+            HttpResponse::Unauthorized().json(ErrorData {
+                data: "Invalid credentials".to_string(),
             })
         }
     }
