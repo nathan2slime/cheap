@@ -3,6 +3,7 @@ FROM rust:1.83.0-slim-bullseye AS build
 RUN apt-get update && apt-get install -y \
     libssl-dev \
     pkg-config \
+    curl \
     build-essential
 
 WORKDIR /build
