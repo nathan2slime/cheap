@@ -62,7 +62,7 @@ pub async fn signin(ctx: Data<ContextData>, body: Json<SignIn>) -> impl Responde
         Err(errors::SignIn::InternalSignIn(e)) => HttpResponse::BadRequest().json(ErrorData {
             data: format!("{:?}", e),
         }),
-        Err(e) =>  HttpResponse::Unauthorized().json(ErrorData {
+        Err(_e) =>  HttpResponse::Unauthorized().json(ErrorData {
             data: "Invalid credentials".to_string(),
         })
     }
